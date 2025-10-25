@@ -1,22 +1,29 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include "teacher.h"
 #include <iostream>
-#include <cstring>
+#include <cwchar>
+
+// Добавляем inline функцию вместо std::max
+template<typename T>
+inline T my_max(T a, T b) {
+    return (a > b) ? a : b;
+}
 
 Teacher::Teacher() : Base(), groups(nullptr), subjects(nullptr),
 groupsCount(0), subjectsCount(0),
 groupsCapacity(5), subjectsCapacity(5) {
-    groups = new char* [groupsCapacity];
-    subjects = new char* [subjectsCapacity];
-    std::cout << "Teacher default constructor called" << std::endl;
+    groups = new wchar_t* [groupsCapacity];
+    subjects = new wchar_t* [subjectsCapacity];
+    std::wcout << L"Конструктор преподавателя по умолчанию вызван" << std::endl;
 }
 
-Teacher::Teacher(const char* name, const char** grps, int grpCount, const char** subj, int subjCount)
+Teacher::Teacher(const wchar_t* name, const wchar_t** grps, int grpCount, const wchar_t** subj, int subjCount)
     : Base(name), groups(nullptr), subjects(nullptr),
     groupsCount(0), subjectsCount(0),
-    groupsCapacity(std::max(5, grpCount + 5)), subjectsCapacity(std::max(5, subjCount + 5)) {
+    groupsCapacity(my_max(5, grpCount + 5)), subjectsCapacity(my_max(5, subjCount + 5)) {
 
-    groups = new char* [groupsCapacity];
-    subjects = new char* [subjectsCapacity];
+    groups = new wchar_t* [groupsCapacity];
+    subjects = new wchar_t* [subjectsCapacity];
 
     for (int i = 0; i < grpCount; i++) {
         addGroup(grps[i]);
@@ -26,15 +33,15 @@ Teacher::Teacher(const char* name, const char** grps, int grpCount, const char**
         addSubject(subj[i]);
     }
 
-    std::cout << "Teacher parameterized constructor called for: " << (name ? name : "Unknown") << std::endl;
+    std::wcout << L"Параметризованный конструктор преподавателя вызван для: " << (name ? name : L"Неизвестно") << std::endl;
 }
 
 Teacher::Teacher(const Teacher& other) : Base(other), groups(nullptr), subjects(nullptr),
 groupsCount(0), subjectsCount(0),
 groupsCapacity(other.groupsCapacity), subjectsCapacity(other.subjectsCapacity) {
 
-    groups = new char* [groupsCapacity];
-    subjects = new char* [subjectsCapacity];
+    groups = new wchar_t* [groupsCapacity];
+    subjects = new wchar_t* [subjectsCapacity];
 
     for (int i = 0; i < other.groupsCount; i++) {
         addGroup(other.groups[i]);
@@ -44,11 +51,11 @@ groupsCapacity(other.groupsCapacity), subjectsCapacity(other.subjectsCapacity) {
         addSubject(other.subjects[i]);
     }
 
-    std::cout << "Teacher copy constructor called for: " << other.getFullName() << std::endl;
+    std::wcout << L"Конструктор копирования преподавателя вызван для: " << other.getFullName() << std::endl;
 }
 
 Teacher::~Teacher() {
-    std::cout << "Teacher destructor called for: " << getFullName() << std::endl;
+    std::wcout << L"Деструктор преподавателя вызван для: " << getFullName() << std::endl;
     for (int i = 0; i < groupsCount; i++) {
         delete[] groups[i];
     }
@@ -61,7 +68,7 @@ Teacher::~Teacher() {
 
 void Teacher::resizeGroups() {
     groupsCapacity *= 2;
-    char** newGroups = new char* [groupsCapacity];
+    wchar_t** newGroups = new wchar_t* [groupsCapacity];
     for (int i = 0; i < groupsCount; i++) {
         newGroups[i] = groups[i];
     }
@@ -71,7 +78,7 @@ void Teacher::resizeGroups() {
 
 void Teacher::resizeSubjects() {
     subjectsCapacity *= 2;
-    char** newSubjects = new char* [subjectsCapacity];
+    wchar_t** newSubjects = new wchar_t* [subjectsCapacity];
     for (int i = 0; i < subjectsCount; i++) {
         newSubjects[i] = subjects[i];
     }
@@ -79,61 +86,78 @@ void Teacher::resizeSubjects() {
     subjects = newSubjects;
 }
 
-void Teacher::addGroup(const char* group) {
+void Teacher::addGroup(const wchar_t* group) {
     if (groupsCount >= groupsCapacity) {
         resizeGroups();
     }
-    groups[groupsCount] = new char[strlen(group) + 1];
-    strcpy(groups[groupsCount], group);
+    groups[groupsCount] = new wchar_t[wcslen(group) + 1];
+    wcscpy(groups[groupsCount], group);
     groupsCount++;
 }
 
-void Teacher::addSubject(const char* subject) {
+void Teacher::addSubject(const wchar_t* subject) {
     if (subjectsCount >= subjectsCapacity) {
         resizeSubjects();
     }
-    subjects[subjectsCount] = new char[strlen(subject) + 1];
-    strcpy(subjects[subjectsCount], subject);
+    subjects[subjectsCount] = new wchar_t[wcslen(subject) + 1];
+    wcscpy(subjects[subjectsCount], subject);
     subjectsCount++;
 }
 
 void Teacher::display() const {
-    std::cout << "TEACHER: " << getFullName() << std::endl;
+    std::wcout << L"ПРЕПОДАВАТЕЛЬ: " << getFullName() << std::endl;
     displayGroups();
     displaySubjects();
 }
 
 void Teacher::edit() {
-    std::cout << "Editing Teacher: " << getFullName() << std::endl;
+    std::wcout << L"Редактирование преподавателя: " << getFullName() << std::endl;
 
-    char buffer[100];
-    std::cout << "Enter new full name: ";
-    std::cin.ignore();
-    std::cin.getline(buffer, 100);
+    wchar_t buffer[100];
+
+    std::wcin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
+    std::wcout << L"Введите новое ФИО: ";
+    std::wcin.getline(buffer, 100);
     setFullName(buffer);
 
     int choice;
     do {
-        std::cout << "\nTeacher Editing Menu:" << std::endl;
-        std::cout << "1. Add group" << std::endl;
-        std::cout << "2. Remove group" << std::endl;
-        std::cout << "3. Add subject" << std::endl;
-        std::cout << "4. Remove subject" << std::endl;
-        std::cout << "5. Display groups" << std::endl;
-        std::cout << "6. Display subjects" << std::endl;
-        std::cout << "0. Finish editing" << std::endl;
-        std::cout << "Choice: ";
-        std::cin >> choice;
+        std::wcout << L"\nМеню редактирования преподавателя:" << std::endl;
+        std::wcout << L"1. Добавить группу" << std::endl;
+        std::wcout << L"2. Удалить группу" << std::endl;
+        std::wcout << L"3. Добавить предмет" << std::endl;
+        std::wcout << L"4. Удалить предмет" << std::endl;
+        std::wcout << L"5. Показать группы" << std::endl;
+        std::wcout << L"6. Показать предметы" << std::endl;
+        std::wcout << L"0. Завершить редактирование" << std::endl;
+        std::wcout << L"Выбор: ";
+        std::wcin >> choice;
+        std::wcin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
         switch (choice) {
-        case 1: addNewGroup(); break;
-        case 2: removeGroup(); break;
-        case 3: addNewSubject(); break;
-        case 4: removeSubject(); break;
-        case 5: displayGroups(); break;
-        case 6: displaySubjects(); break;
-        case 0: break;
-        default: std::cout << "Invalid choice!" << std::endl;
+        case 1:
+            addNewGroup();
+            break;
+        case 2:
+            removeGroup();
+            break;
+        case 3:
+            addNewSubject();
+            break;
+        case 4:
+            removeSubject();
+            break;
+        case 5:
+            displayGroups();
+            break;
+        case 6:
+            displaySubjects();
+            break;
+        case 0:
+            break;
+        default:
+            std::wcout << L"Неверный выбор!" << std::endl;
         }
     } while (choice != 0);
 }
@@ -143,36 +167,35 @@ Base* Teacher::clone() const {
 }
 
 void Teacher::addNewGroup() {
-    char buffer[100];
-    std::cout << "Enter group name: ";
-    std::cin.ignore();
-    std::cin.getline(buffer, 100);
+    wchar_t buffer[100];
+    std::wcout << L"Введите название группы: ";
+    std::wcin.getline(buffer, 100);
     addGroup(buffer);
-    std::cout << "Group added successfully!" << std::endl;
+    std::wcout << L"Группа добавлена успешно!" << std::endl;
 }
 
 void Teacher::addNewSubject() {
-    char buffer[100];
-    std::cout << "Enter subject name: ";
-    std::cin.ignore();
-    std::cin.getline(buffer, 100);
+    wchar_t buffer[100];
+    std::wcout << L"Введите название предмета: ";
+    std::wcin.getline(buffer, 100);
     addSubject(buffer);
-    std::cout << "Subject added successfully!" << std::endl;
+    std::wcout << L"Предмет добавлен успешно!" << std::endl;
 }
 
 void Teacher::removeGroup() {
     if (groupsCount == 0) {
-        std::cout << "No groups to remove!" << std::endl;
+        std::wcout << L"Нет групп для удаления!" << std::endl;
         return;
     }
 
     displayGroups();
     int index;
-    std::cout << "Enter group number to remove (1-" << groupsCount << "): ";
-    std::cin >> index;
+    std::wcout << L"Введите номер группы для удаления (1-" << groupsCount << L"): ";
+    std::wcin >> index;
+    std::wcin.ignore();
 
     if (index < 1 || index > groupsCount) {
-        std::cout << "Invalid group number!" << std::endl;
+        std::wcout << L"Неверный номер группы!" << std::endl;
         return;
     }
 
@@ -181,22 +204,23 @@ void Teacher::removeGroup() {
         groups[i] = groups[i + 1];
     }
     groupsCount--;
-    std::cout << "Group removed successfully!" << std::endl;
+    std::wcout << L"Группа удалена успешно!" << std::endl;
 }
 
 void Teacher::removeSubject() {
     if (subjectsCount == 0) {
-        std::cout << "No subjects to remove!" << std::endl;
+        std::wcout << L"Нет предметов для удаления!" << std::endl;
         return;
     }
 
     displaySubjects();
     int index;
-    std::cout << "Enter subject number to remove (1-" << subjectsCount << "): ";
-    std::cin >> index;
+    std::wcout << L"Введите номер предмета для удаления (1-" << subjectsCount << L"): ";
+    std::wcin >> index;
+    std::wcin.ignore();
 
     if (index < 1 || index > subjectsCount) {
-        std::cout << "Invalid subject number!" << std::endl;
+        std::wcout << L"Неверный номер предмета!" << std::endl;
         return;
     }
 
@@ -205,34 +229,34 @@ void Teacher::removeSubject() {
         subjects[i] = subjects[i + 1];
     }
     subjectsCount--;
-    std::cout << "Subject removed successfully!" << std::endl;
+    std::wcout << L"Предмет удален успешно!" << std::endl;
 }
 
 void Teacher::displayGroups() const {
-    std::cout << "  Groups (" << groupsCount << "): ";
+    std::wcout << L"  Группы (" << groupsCount << L"): ";
     if (groupsCount == 0) {
-        std::cout << "None" << std::endl;
+        std::wcout << L"Нет групп" << std::endl;
     }
     else {
         for (int i = 0; i < groupsCount; i++) {
-            std::cout << groups[i];
-            if (i < groupsCount - 1) std::cout << ", ";
+            std::wcout << groups[i];
+            if (i < groupsCount - 1) std::wcout << L", ";
         }
-        std::cout << std::endl;
+        std::wcout << std::endl;
     }
 }
 
 void Teacher::displaySubjects() const {
-    std::cout << "  Subjects (" << subjectsCount << "): ";
+    std::wcout << L"  Предметы (" << subjectsCount << L"): ";
     if (subjectsCount == 0) {
-        std::cout << "None" << std::endl;
+        std::wcout << L"Нет предметов" << std::endl;
     }
     else {
         for (int i = 0; i < subjectsCount; i++) {
-            std::cout << subjects[i];
-            if (i < subjectsCount - 1) std::cout << ", ";
+            std::wcout << subjects[i];
+            if (i < subjectsCount - 1) std::wcout << L", ";
         }
-        std::cout << std::endl;
+        std::wcout << std::endl;
     }
 }
 
@@ -254,8 +278,8 @@ Teacher& Teacher::operator=(const Teacher& other) {
         groupsCapacity = other.groupsCapacity;
         subjectsCapacity = other.subjectsCapacity;
 
-        groups = new char* [groupsCapacity];
-        subjects = new char* [subjectsCapacity];
+        groups = new wchar_t* [groupsCapacity];
+        subjects = new wchar_t* [subjectsCapacity];
 
         for (int i = 0; i < other.groupsCount; i++) {
             addGroup(other.groups[i]);

@@ -1,3 +1,6 @@
+#define _CRT_SECURE_NO_WARNINGS
+#define NOMINMAX
+
 #include "keeper.h"
 #include "student.h"
 #include "teacher.h"
@@ -5,15 +8,22 @@
 #include <fstream>
 #include <iostream>
 #include <typeinfo>
+#include <string>
+#include <cwchar>
+
+// Простая функция для замены std::max
+int myMax(int a, int b) {
+    return (a > b) ? a : b;
+}
 
 Keeper::Keeper() : size(0), capacity(10) {
     data = new Base * [capacity];
-    std::cout << "Keeper default constructor called" << std::endl;
+    std::wcout << L"Конструктор хранителя по умолчанию вызван" << std::endl;
 }
 
-Keeper::Keeper(int cap) : size(0), capacity(cap > 0 ? cap : 10) {
+Keeper::Keeper(int cap) : size(0), capacity((cap > 0) ? cap : 10) {
     data = new Base * [capacity];
-    std::cout << "Keeper parameterized constructor called with capacity: " << capacity << std::endl;
+    std::wcout << L"Параметризованный конструктор хранителя вызван с вместимостью: " << capacity << std::endl;
 }
 
 Keeper::Keeper(const Keeper& other) : size(other.size), capacity(other.capacity) {
@@ -21,7 +31,7 @@ Keeper::Keeper(const Keeper& other) : size(other.size), capacity(other.capacity)
     for (int i = 0; i < size; i++) {
         data[i] = other.data[i]->clone();
     }
-    std::cout << "Keeper copy constructor called" << std::endl;
+    std::wcout << L"Конструктор копирования хранителя вызван" << std::endl;
 }
 
 Keeper::~Keeper() {
@@ -29,7 +39,7 @@ Keeper::~Keeper() {
         delete data[i];
     }
     delete[] data;
-    std::cout << "Keeper destructor called" << std::endl;
+    std::wcout << L"Деструктор хранителя вызван" << std::endl;
 }
 
 void Keeper::resize() {
@@ -46,13 +56,16 @@ void Keeper::add(Base* item) {
     if (size >= capacity) {
         resize();
     }
-    data[size++] = item;
-    std::cout << "Item added to keeper successfully!" << std::endl;
+    if (size < capacity) {
+        data[size] = item;
+        size++;
+        std::wcout << L"Объект добавлен в хранитель успешно!" << std::endl;
+    }
 }
 
 void Keeper::remove(int index) {
     if (index < 0 || index >= size) {
-        throw std::out_of_range("Invalid index for removal");
+        throw std::out_of_range("Неверный индекс для удаления");
     }
 
     delete data[index];
@@ -60,26 +73,26 @@ void Keeper::remove(int index) {
         data[i] = data[i + 1];
     }
     size--;
-    std::cout << "Item removed successfully!" << std::endl;
+    std::wcout << L"Объект удален успешно!" << std::endl;
 }
 
 void Keeper::displayAll() const {
     if (size == 0) {
-        std::cout << "Keeper is empty!" << std::endl;
+        std::wcout << L"Хранитель пуст!" << std::endl;
         return;
     }
 
-    std::cout << "\n=== ALL ITEMS IN KEEPER ===" << std::endl;
+    std::wcout << L"\n=== ВСЕ ОБЪЕКТЫ В ХРАНИТЕЛЕ ===" << std::endl;
     for (int i = 0; i < size; i++) {
-        std::cout << "Item " << (i + 1) << ":" << std::endl;
+        std::wcout << L"Объект " << (i + 1) << L":" << std::endl;
         data[i]->display();
-        std::cout << std::endl;
+        std::wcout << std::endl;
     }
 }
 
 void Keeper::edit(int index) {
     if (index < 0 || index >= size) {
-        throw std::out_of_range("Invalid index for editing");
+        throw std::out_of_range("Неверный индекс для редактирования");
     }
     data[index]->edit();
 }
@@ -87,7 +100,7 @@ void Keeper::edit(int index) {
 void Keeper::saveToFile(const char* filename) const {
     std::ofstream file(filename);
     if (!file.is_open()) {
-        throw std::runtime_error("Cannot open file for writing");
+        throw std::runtime_error("Не удалось открыть файл для записи");
     }
 
     file << size << std::endl;
@@ -95,38 +108,57 @@ void Keeper::saveToFile(const char* filename) const {
         if (dynamic_cast<Student*>(data[i])) {
             file << "Student" << std::endl;
             Student* s = dynamic_cast<Student*>(data[i]);
-            file << s->getFullName() << std::endl;
-            file << s->getGroup() << std::endl;
-            file << s->getSpecialty() << std::endl;
+
+            const wchar_t* wname = s->getFullName();
+            const wchar_t* wgroup = s->getGroup();
+            const wchar_t* wspecialty = s->getSpecialty();
+
+            char buffer[100];
+            wcstombs(buffer, wname, 100);
+            file << buffer << std::endl;
+
+            wcstombs(buffer, wgroup, 100);
+            file << buffer << std::endl;
+
+            wcstombs(buffer, wspecialty, 100);
+            file << buffer << std::endl;
+
             file << s->getCourse() << std::endl;
             file << s->getAverageGrade() << std::endl;
-        }
-        else if (dynamic_cast<Teacher*>(data[i])) {
-            file << "Teacher" << std::endl;
-            Teacher* t = dynamic_cast<Teacher*>(data[i]);
-            file << t->getFullName() << std::endl;
-            // Groups and subjects would need more complex serialization
         }
         else if (dynamic_cast<Staff*>(data[i])) {
             file << "Staff" << std::endl;
             Staff* st = dynamic_cast<Staff*>(data[i]);
-            file << st->getFullName() << std::endl;
-            file << st->getPosition() << std::endl;
-            file << st->getPhone() << std::endl;
-            file << st->getResponsibility() << std::endl;
+
+            const wchar_t* wname = st->getFullName();
+            const wchar_t* wposition = st->getPosition();
+            const wchar_t* wphone = st->getPhone();
+            const wchar_t* wresponsibility = st->getResponsibility();
+
+            char buffer[100];
+            wcstombs(buffer, wname, 100);
+            file << buffer << std::endl;
+
+            wcstombs(buffer, wposition, 100);
+            file << buffer << std::endl;
+
+            wcstombs(buffer, wphone, 100);
+            file << buffer << std::endl;
+
+            wcstombs(buffer, wresponsibility, 100);
+            file << buffer << std::endl;
         }
     }
     file.close();
-    std::cout << "Data saved to file: " << filename << std::endl;
+    std::wcout << L"Данные сохранены в файл" << std::endl;
 }
 
 void Keeper::loadFromFile(const char* filename) {
     std::ifstream file(filename);
     if (!file.is_open()) {
-        throw std::runtime_error("Cannot open file for reading");
+        throw std::runtime_error("Не удалось открыть файл для чтения");
     }
 
-    // Clear current data
     for (int i = 0; i < size; i++) {
         delete data[i];
     }
@@ -152,7 +184,12 @@ void Keeper::loadFromFile(const char* filename) {
             file >> avg;
             file.ignore();
 
-            add(new Student(name.c_str(), group.c_str(), specialty.c_str(), course, avg));
+            wchar_t wname[100], wgroup[100], wspecialty[100];
+            mbstowcs(wname, name.c_str(), 100);
+            mbstowcs(wgroup, group.c_str(), 100);
+            mbstowcs(wspecialty, specialty.c_str(), 100);
+
+            add(new Student(wname, wgroup, wspecialty, course, avg));
         }
         else if (type == "Staff") {
             std::string name, position, phone, responsibility;
@@ -162,12 +199,17 @@ void Keeper::loadFromFile(const char* filename) {
             std::getline(file, phone);
             std::getline(file, responsibility);
 
-            add(new Staff(name.c_str(), position.c_str(), phone.c_str(), responsibility.c_str()));
+            wchar_t wname[100], wposition[100], wphone[100], wresponsibility[100];
+            mbstowcs(wname, name.c_str(), 100);
+            mbstowcs(wposition, position.c_str(), 100);
+            mbstowcs(wphone, phone.c_str(), 100);
+            mbstowcs(wresponsibility, responsibility.c_str(), 100);
+
+            add(new Staff(wname, wposition, wphone, wresponsibility));
         }
-        // Teacher loading would be more complex due to dynamic arrays
     }
     file.close();
-    std::cout << "Data loaded from file: " << filename << std::endl;
+    std::wcout << L"Данные загружены из файла" << std::endl;
 }
 
 int Keeper::getSize() const {
@@ -185,7 +227,7 @@ Keeper& Keeper::operator=(const Keeper& other) {
         capacity = other.capacity;
         data = new Base * [capacity];
 
-        for (int i = 0; i < size; i++) {
+        for (int i = 0; i < size && i < capacity; i++) {
             data[i] = other.data[i]->clone();
         }
     }
@@ -194,7 +236,7 @@ Keeper& Keeper::operator=(const Keeper& other) {
 
 Base* Keeper::operator[](int index) {
     if (index < 0 || index >= size) {
-        throw std::out_of_range("Invalid index");
+        throw std::out_of_range("Неверный индекс");
     }
     return data[index];
 }

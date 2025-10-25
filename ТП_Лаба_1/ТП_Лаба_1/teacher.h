@@ -5,21 +5,21 @@
 
 class Teacher : public Base {
 private:
-    char** groups;
-    char** subjects;
+    wchar_t** groups;
+    wchar_t** subjects;
     int groupsCount;
     int subjectsCount;
     int groupsCapacity;
     int subjectsCapacity;
 
-    void addGroup(const char* group);
-    void addSubject(const char* subject);
+    void addGroup(const wchar_t* group);
+    void addSubject(const wchar_t* subject);
     void resizeGroups();
     void resizeSubjects();
 
 public:
     Teacher();
-    Teacher(const char* name, const char** grps, int grpCount, const char** subj, int subjCount);
+    Teacher(const wchar_t* name, const wchar_t** grps, int grpCount, const wchar_t** subj, int subjCount);
     Teacher(const Teacher& other);
     ~Teacher();
 

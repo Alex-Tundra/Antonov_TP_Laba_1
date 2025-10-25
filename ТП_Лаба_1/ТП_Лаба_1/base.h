@@ -3,16 +3,18 @@
 
 #include <iostream>
 #include <cstring>
+#include <locale>
+#include <clocale>
 
 class Base {
 protected:
-    char* fullName;
+    wchar_t* fullName;
 
-    void copyString(char*& dest, const char* src);
+    void copyString(wchar_t*& dest, const wchar_t* src);
 
 public:
     Base();
-    Base(const char* name);
+    Base(const wchar_t* name);
     Base(const Base& other);
     virtual ~Base();
 
@@ -20,8 +22,8 @@ public:
     virtual void edit() = 0;
     virtual Base* clone() const = 0;
 
-    const char* getFullName() const;
-    void setFullName(const char* name);
+    const wchar_t* getFullName() const;
+    void setFullName(const wchar_t* name);
 
     Base& operator=(const Base& other);
 };

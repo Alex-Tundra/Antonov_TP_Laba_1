@@ -1,72 +1,117 @@
+#define _CRT_SECURE_NO_WARNINGS
+#define NOMINMAX
+
 #include <iostream>
 #include <limits>
+#include <windows.h>
+#include <locale>
+#include <clocale>
 #include "keeper.h"
 #include "student.h"
 #include "teacher.h"
 #include "staff.h"
 
+// Функция для безопасного ввода числа с проверкой
+int safeInputInt() {
+    int value;
+    while (!(std::wcin >> value)) {
+        std::wcout << L"Ошибка ввода! Введите целое число: ";
+        std::wcin.clear();
+        std::wcin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    }
+    std::wcin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    return value;
+}
+
+// Функция для безопасного ввода числа с плавающей точкой
+double safeInputDouble() {
+    double value;
+    while (!(std::wcin >> value)) {
+        std::wcout << L"Ошибка ввода! Введите число: ";
+        std::wcin.clear();
+        std::wcin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    }
+    std::wcin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    return value;
+}
+
+// Функция для безопасного ввода строки
+void safeInputString(wchar_t* buffer, int size, const wchar_t* prompt) {
+    std::wcout << prompt;
+    std::wcin.getline(buffer, size);
+    // Если буфер был пустым (пользователь просто нажал Enter)
+    if (wcslen(buffer) == 0) {
+        std::wcout << L"Поле не может быть пустым! ";
+        safeInputString(buffer, size, prompt);
+    }
+}
+
 void displayMenu() {
-    std::cout << "\n=== СИСТЕМА УПРАВЛЕНИЯ ВУЗОМ ===" << std::endl;
-    std::cout << "1. Добавить студента" << std::endl;
-    std::cout << "2. Добавить преподавателя" << std::endl;
-    std::cout << "3. Добавить персонал" << std::endl;
-    std::cout << "4. Показать все" << std::endl;
-    std::cout << "5. Редактировать объект" << std::endl;
-    std::cout << "6. Удалить объект" << std::endl;
-    std::cout << "7. Сохранить в файл" << std::endl;
-    std::cout << "8. Загрузить из файла" << std::endl;
-    std::cout << "0. Выход" << std::endl;
-    std::cout << "Выбор: ";
+    std::wcout << L"\n=== СИСТЕМА УПРАВЛЕНИЯ ВУЗОМ ===" << std::endl;
+    std::wcout << L"1. Добавить студента" << std::endl;
+    std::wcout << L"2. Добавить преподавателя" << std::endl;
+    std::wcout << L"3. Добавить персонал" << std::endl;
+    std::wcout << L"4. Показать все" << std::endl;
+    std::wcout << L"5. Редактировать объект" << std::endl;
+    std::wcout << L"6. Удалить объект" << std::endl;
+    std::wcout << L"7. Сохранить в файл" << std::endl;
+    std::wcout << L"8. Загрузить из файла" << std::endl;
+    std::wcout << L"0. Выход" << std::endl;
+    std::wcout << L"Выбор: ";
 }
 
 Base* createStudent() {
-    char name[100], group[100], specialty[100];
+    wchar_t name[100], group[100], specialty[100];
     int course;
     double avg;
 
-    std::cout << "Введите ФИО студента: ";
-    std::cin.ignore();
-    std::cin.getline(name, 100);
+    // Очищаем буфер перед началом ввода
+    std::wcin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
-    std::cout << "Введите группу: ";
-    std::cin.getline(group, 100);
+    safeInputString(name, 100, L"Введите ФИО студента: ");
+    safeInputString(group, 100, L"Введите группу: ");
+    safeInputString(specialty, 100, L"Введите специальность: ");
 
-    std::cout << "Введите специальность: ";
-    std::cin.getline(specialty, 100);
+    std::wcout << L"Введите курс: ";
+    course = safeInputInt();
 
-    std::cout << "Введите курс: ";
-    std::cin >> course;
-
-    std::cout << "Введите средний балл: ";
-    std::cin >> avg;
+    std::wcout << L"Введите средний балл: ";
+    avg = safeInputDouble();
 
     return new Student(name, group, specialty, course, avg);
 }
 
 Base* createTeacher() {
-    char name[100];
+    wchar_t name[100];
 
-    std::cout << "Введите ФИО преподавателя: ";
-    std::cin.ignore();
-    std::cin.getline(name, 100);
+    // Очищаем буфер перед началом ввода
+    std::wcin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
+    safeInputString(name, 100, L"Введите ФИО преподавателя: ");
 
     Teacher* teacher = new Teacher();
     teacher->setFullName(name);
 
     int choice;
     do {
-        std::cout << "\nМеню создания преподавателя:" << std::endl;
-        std::cout << "1. Добавить группу" << std::endl;
-        std::cout << "2. Добавить предмет" << std::endl;
-        std::cout << "0. Завершить создание" << std::endl;
-        std::cout << "Выбор: ";
-        std::cin >> choice;
+        std::wcout << L"\nМеню создания преподавателя:" << std::endl;
+        std::wcout << L"1. Добавить группу" << std::endl;
+        std::wcout << L"2. Добавить предмет" << std::endl;
+        std::wcout << L"0. Завершить создание" << std::endl;
+        std::wcout << L"Выбор: ";
+        choice = safeInputInt();
 
         switch (choice) {
-        case 1: teacher->addNewGroup(); break;
-        case 2: teacher->addNewSubject(); break;
-        case 0: break;
-        default: std::cout << "Неверный выбор!" << std::endl;
+        case 1:
+            teacher->addNewGroup();
+            break;
+        case 2:
+            teacher->addNewSubject();
+            break;
+        case 0:
+            break;
+        default:
+            std::wcout << L"Неверный выбор!" << std::endl;
         }
     } while (choice != 0);
 
@@ -74,34 +119,34 @@ Base* createTeacher() {
 }
 
 Base* createStaff() {
-    char name[100], position[100], phone[100], responsibility[100];
+    wchar_t name[100], position[100], phone[100], responsibility[100];
 
-    std::cout << "Введите ФИО сотрудника: ";
-    std::cin.ignore();
-    std::cin.getline(name, 100);
+    // Очищаем буфер перед началом ввода
+    std::wcin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
-    std::cout << "Введите должность: ";
-    std::cin.getline(position, 100);
-
-    std::cout << "Введите телефон: ";
-    std::cin.getline(phone, 100);
-
-    std::cout << "Введите область ответственности: ";
-    std::cin.getline(responsibility, 100);
+    safeInputString(name, 100, L"Введите ФИО сотрудника: ");
+    safeInputString(position, 100, L"Введите должность: ");
+    safeInputString(phone, 100, L"Введите телефон: ");
+    safeInputString(responsibility, 100, L"Введите область ответственности: ");
 
     return new Staff(name, position, phone, responsibility);
 }
 
 int main() {
+    // Установка русской локали
+    SetConsoleCP(1251);
+    SetConsoleOutputCP(1251);
+    std::setlocale(LC_ALL, "Russian");
+
     Keeper keeper;
     int choice;
 
-    std::cout << "Система управления ВУЗом запущена" << std::endl;
+    std::wcout << L"Система управления ВУЗом запущена" << std::endl;
 
     do {
         try {
             displayMenu();
-            std::cin >> choice;
+            choice = safeInputInt();
 
             switch (choice) {
             case 1: {
@@ -125,58 +170,70 @@ int main() {
             }
             case 5: {
                 if (keeper.getSize() == 0) {
-                    std::cout << "Хранитель пуст!" << std::endl;
+                    std::wcout << L"Хранитель пуст!" << std::endl;
                     break;
                 }
                 keeper.displayAll();
                 int index;
-                std::cout << "Введите номер объекта для редактирования (1-" << keeper.getSize() << "): ";
-                std::cin >> index;
-                keeper.edit(index - 1);
+                std::wcout << L"Введите номер объекта для редактирования (1-" << keeper.getSize() << L"): ";
+                index = safeInputInt();
+                if (index >= 1 && index <= keeper.getSize()) {
+                    keeper.edit(index - 1);
+                }
+                else {
+                    std::wcout << L"Неверный номер!" << std::endl;
+                }
                 break;
             }
             case 6: {
                 if (keeper.getSize() == 0) {
-                    std::cout << "Хранитель пуст!" << std::endl;
+                    std::wcout << L"Хранитель пуст!" << std::endl;
                     break;
                 }
                 keeper.displayAll();
                 int index;
-                std::cout << "Введите номер объекта для удаления (1-" << keeper.getSize() << "): ";
-                std::cin >> index;
-                keeper.remove(index - 1);
+                std::wcout << L"Введите номер объекта для удаления (1-" << keeper.getSize() << L"): ";
+                index = safeInputInt();
+                if (index >= 1 && index <= keeper.getSize()) {
+                    keeper.remove(index - 1);
+                }
+                else {
+                    std::wcout << L"Неверный номер!" << std::endl;
+                }
                 break;
             }
             case 7: {
-                char filename[100];
-                std::cout << "Введите имя файла для сохранения: ";
-                std::cin.ignore();
-                std::cin.getline(filename, 100);
-                keeper.saveToFile(filename);
+                wchar_t filename[100];
+                std::wcin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                safeInputString(filename, 100, L"Введите имя файла для сохранения: ");
+
+                char narrowFilename[100];
+                wcstombs(narrowFilename, filename, 100);
+                keeper.saveToFile(narrowFilename);
                 break;
             }
             case 8: {
-                char filename[100];
-                std::cout << "Введите имя файла для загрузки: ";
-                std::cin.ignore();
-                std::cin.getline(filename, 100);
-                keeper.loadFromFile(filename);
+                wchar_t filename[100];
+                std::wcin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                safeInputString(filename, 100, L"Введите имя файла для загрузки: ");
+
+                char narrowFilename[100];
+                wcstombs(narrowFilename, filename, 100);
+                keeper.loadFromFile(narrowFilename);
                 break;
             }
             case 0: {
-                std::cout << "Завершение программы..." << std::endl;
+                std::wcout << L"Завершение программы..." << std::endl;
                 break;
             }
             default: {
-                std::cout << "Неверный выбор! Пожалуйста, попробуйте снова." << std::endl;
+                std::wcout << L"Неверный выбор! Пожалуйста, попробуйте снова." << std::endl;
                 break;
             }
             }
         }
         catch (const std::exception& e) {
-            std::cout << "Ошибка: " << e.what() << std::endl;
-            std::cin.clear();
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            std::wcout << L"Ошибка: " << e.what() << std::endl;
         }
     } while (choice != 0);
 

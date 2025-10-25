@@ -5,13 +5,13 @@
 
 class Staff : public Base {
 private:
-    char* position;
-    char* phone;
-    char* responsibility;
+    wchar_t* position;
+    wchar_t* phone;
+    wchar_t* responsibility;
 
 public:
     Staff();
-    Staff(const char* name, const char* pos, const char* ph, const char* resp);
+    Staff(const wchar_t* name, const wchar_t* pos, const wchar_t* ph, const wchar_t* resp);
     Staff(const Staff& other);
     ~Staff();
 
@@ -19,13 +19,13 @@ public:
     void edit() override;
     Base* clone() const override;
 
-    const char* getPosition() const;
-    const char* getPhone() const;
-    const char* getResponsibility() const;
+    const wchar_t* getPosition() const;
+    const wchar_t* getPhone() const;
+    const wchar_t* getResponsibility() const;
 
-    void setPosition(const char* pos);
-    void setPhone(const char* ph);
-    void setResponsibility(const char* resp);
+    void setPosition(const wchar_t* pos);
+    void setPhone(const wchar_t* ph);
+    void setResponsibility(const wchar_t* resp);
 
     Staff& operator=(const Staff& other);
 };

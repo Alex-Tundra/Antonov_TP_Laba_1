@@ -1,10 +1,11 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include "base.h"
 
-void Base::copyString(char*& dest, const char* src) {
+void Base::copyString(wchar_t*& dest, const wchar_t* src) {
     if (dest) delete[] dest;
     if (src) {
-        dest = new char[strlen(src) + 1];
-        strcpy(dest, src);
+        dest = new wchar_t[wcslen(src) + 1];
+        wcscpy(dest, src);
     }
     else {
         dest = nullptr;
@@ -12,31 +13,31 @@ void Base::copyString(char*& dest, const char* src) {
 }
 
 Base::Base() : fullName(nullptr) {
-    std::cout << "Base default constructor called" << std::endl;
+    std::wcout << L"Базовый конструктор по умолчанию вызван" << std::endl;
 }
 
-Base::Base(const char* name) : fullName(nullptr) {
+Base::Base(const wchar_t* name) : fullName(nullptr) {
     copyString(fullName, name);
-    std::cout << "Base parameterized constructor called for: " << (name ? name : "Unknown") << std::endl;
+    std::wcout << L"Базовый параметризованный конструктор вызван для: " << (name ? name : L"Неизвестно") << std::endl;
 }
 
 Base::Base(const Base& other) : fullName(nullptr) {
     copyString(fullName, other.fullName);
-    std::cout << "Base copy constructor called for: " << (other.fullName ? other.fullName : "Unknown") << std::endl;
+    std::wcout << L"Базовый конструктор копирования вызван для: " << (other.fullName ? other.fullName : L"Неизвестно") << std::endl;
 }
 
 Base::~Base() {
-    std::cout << "Base destructor called for: " << (fullName ? fullName : "Unknown") << std::endl;
+    std::wcout << L"Базовый деструктор вызван для: " << (fullName ? fullName : L"Неизвестно") << std::endl;
     delete[] fullName;
 }
 
-const char* Base::getFullName() const {
-    return fullName ? fullName : "Unknown";
+const wchar_t* Base::getFullName() const {
+    return fullName ? fullName : L"Неизвестно";
 }
 
-void Base::setFullName(const char* name) {
-    if (!name || strlen(name) == 0) {
-        throw std::invalid_argument("Full name cannot be empty");
+void Base::setFullName(const wchar_t* name) {
+    if (!name || wcslen(name) == 0) {
+        throw std::invalid_argument("ФИО не может быть пустым");
     }
     copyString(fullName, name);
 }

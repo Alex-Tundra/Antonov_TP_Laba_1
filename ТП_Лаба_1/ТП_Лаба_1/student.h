@@ -5,14 +5,14 @@
 
 class Student : public Base {
 private:
-    char* group;
-    char* specialty;
+    wchar_t* group;
+    wchar_t* specialty;
     int course;
     double averageGrade;
 
 public:
     Student();
-    Student(const char* name, const char* grp, const char* spec, int crs, double avg);
+    Student(const wchar_t* name, const wchar_t* grp, const wchar_t* spec, int crs, double avg);
     Student(const Student& other);
     ~Student();
 
@@ -20,13 +20,13 @@ public:
     void edit() override;
     Base* clone() const override;
 
-    const char* getGroup() const;
-    const char* getSpecialty() const;
+    const wchar_t* getGroup() const;
+    const wchar_t* getSpecialty() const;
     int getCourse() const;
     double getAverageGrade() const;
 
-    void setGroup(const char* grp);
-    void setSpecialty(const char* spec);
+    void setGroup(const wchar_t* grp);
+    void setSpecialty(const wchar_t* spec);
     void setCourse(int crs);
     void setAverageGrade(double avg);
 
