@@ -18,6 +18,8 @@ public:
     void display() const override;
     void edit() override;
     Base* clone() const override;
+    void saveToStream(std::ostream& os) const override;
+    void loadFromStream(std::istream& is) override;
 
     const wchar_t* getPosition() const;
     const wchar_t* getPhone() const;

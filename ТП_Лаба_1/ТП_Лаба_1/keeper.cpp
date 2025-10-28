@@ -11,9 +11,11 @@
 #include <string>
 #include <cwchar>
 
-// Простая функция для замены std::max
-int myMax(int a, int b) {
-    return (a > b) ? a : b;
+// Внутренняя функция для этого файла
+namespace {
+    int myMax(int a, int b) {
+        return (a > b) ? a : b;
+    }
 }
 
 Keeper::Keeper() : size(0), capacity(10) {
@@ -103,54 +105,16 @@ void Keeper::saveToFile(const char* filename) const {
         throw std::runtime_error("Не удалось открыть файл для записи");
     }
 
+    // Сохраняем количество объектов
     file << size << std::endl;
+
+    // Сохраняем каждый объект
     for (int i = 0; i < size; i++) {
-        if (dynamic_cast<Student*>(data[i])) {
-            file << "Student" << std::endl;
-            Student* s = dynamic_cast<Student*>(data[i]);
-
-            const wchar_t* wname = s->getFullName();
-            const wchar_t* wgroup = s->getGroup();
-            const wchar_t* wspecialty = s->getSpecialty();
-
-            char buffer[100];
-            wcstombs(buffer, wname, 100);
-            file << buffer << std::endl;
-
-            wcstombs(buffer, wgroup, 100);
-            file << buffer << std::endl;
-
-            wcstombs(buffer, wspecialty, 100);
-            file << buffer << std::endl;
-
-            file << s->getCourse() << std::endl;
-            file << s->getAverageGrade() << std::endl;
-        }
-        else if (dynamic_cast<Staff*>(data[i])) {
-            file << "Staff" << std::endl;
-            Staff* st = dynamic_cast<Staff*>(data[i]);
-
-            const wchar_t* wname = st->getFullName();
-            const wchar_t* wposition = st->getPosition();
-            const wchar_t* wphone = st->getPhone();
-            const wchar_t* wresponsibility = st->getResponsibility();
-
-            char buffer[100];
-            wcstombs(buffer, wname, 100);
-            file << buffer << std::endl;
-
-            wcstombs(buffer, wposition, 100);
-            file << buffer << std::endl;
-
-            wcstombs(buffer, wphone, 100);
-            file << buffer << std::endl;
-
-            wcstombs(buffer, wresponsibility, 100);
-            file << buffer << std::endl;
-        }
+        data[i]->saveToStream(file);
     }
+
     file.close();
-    std::wcout << L"Данные сохранены в файл" << std::endl;
+    std::wcout << L"Данные успешно сохранены в файл: " << filename << std::endl;
 }
 
 void Keeper::loadFromFile(const char* filename) {
@@ -159,57 +123,44 @@ void Keeper::loadFromFile(const char* filename) {
         throw std::runtime_error("Не удалось открыть файл для чтения");
     }
 
+    // Очищаем текущие данные
     for (int i = 0; i < size; i++) {
         delete data[i];
     }
     size = 0;
 
+    // Читаем количество объектов
     int fileSize;
     file >> fileSize;
-    file.ignore();
+    file.ignore(); // Игнорируем символ новой строки
 
+    // Читаем каждый объект
     for (int i = 0; i < fileSize; i++) {
         std::string type;
         std::getline(file, type);
 
+        Base* obj = nullptr;
+
         if (type == "Student") {
-            std::string name, group, specialty;
-            int course;
-            double avg;
-
-            std::getline(file, name);
-            std::getline(file, group);
-            std::getline(file, specialty);
-            file >> course;
-            file >> avg;
-            file.ignore();
-
-            wchar_t wname[100], wgroup[100], wspecialty[100];
-            mbstowcs(wname, name.c_str(), 100);
-            mbstowcs(wgroup, group.c_str(), 100);
-            mbstowcs(wspecialty, specialty.c_str(), 100);
-
-            add(new Student(wname, wgroup, wspecialty, course, avg));
+            obj = new Student();
+            obj->loadFromStream(file);
+        }
+        else if (type == "Teacher") {
+            obj = new Teacher();
+            obj->loadFromStream(file);
         }
         else if (type == "Staff") {
-            std::string name, position, phone, responsibility;
+            obj = new Staff();
+            obj->loadFromStream(file);
+        }
 
-            std::getline(file, name);
-            std::getline(file, position);
-            std::getline(file, phone);
-            std::getline(file, responsibility);
-
-            wchar_t wname[100], wposition[100], wphone[100], wresponsibility[100];
-            mbstowcs(wname, name.c_str(), 100);
-            mbstowcs(wposition, position.c_str(), 100);
-            mbstowcs(wphone, phone.c_str(), 100);
-            mbstowcs(wresponsibility, responsibility.c_str(), 100);
-
-            add(new Staff(wname, wposition, wphone, wresponsibility));
+        if (obj) {
+            add(obj);
         }
     }
+
     file.close();
-    std::wcout << L"Данные загружены из файла" << std::endl;
+    std::wcout << L"Данные успешно загружены из файла: " << filename << std::endl;
 }
 
 int Keeper::getSize() const {

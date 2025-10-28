@@ -2,6 +2,7 @@
 #include "student.h"
 #include <iostream>
 #include <limits>
+#include <sstream>
 
 Student::Student() : Base(), group(nullptr), specialty(nullptr), course(1), averageGrade(0.0) {
     std::wcout << L"Конструктор студента по умолчанию вызван" << std::endl;
@@ -71,6 +72,57 @@ void Student::edit() {
 
 Base* Student::clone() const {
     return new Student(*this);
+}
+
+void Student::saveToStream(std::ostream& os) const {
+    // Сохраняем тип объекта
+    os << "Student" << std::endl;
+
+    // Сохраняем данные в UTF-8
+    const wchar_t* wname = getFullName();
+    const wchar_t* wgroup = getGroup();
+    const wchar_t* wspecialty = getSpecialty();
+
+    char buffer[256];
+
+    wcstombs(buffer, wname, 256);
+    os << buffer << std::endl;
+
+    wcstombs(buffer, wgroup, 256);
+    os << buffer << std::endl;
+
+    wcstombs(buffer, wspecialty, 256);
+    os << buffer << std::endl;
+
+    os << course << std::endl;
+    os << averageGrade << std::endl;
+}
+
+void Student::loadFromStream(std::istream& is) {
+    // Читаем данные из потока
+    std::string name, group, specialty;
+    int crs;
+    double avg;
+
+    std::getline(is, name);
+    std::getline(is, group);
+    std::getline(is, specialty);
+    is >> crs;
+    is >> avg;
+    is.ignore(); // Игнорируем символ новой строки
+
+    // Конвертируем в wchar_t
+    wchar_t wname[256], wgroup[256], wspecialty[256];
+    mbstowcs(wname, name.c_str(), 256);
+    mbstowcs(wgroup, group.c_str(), 256);
+    mbstowcs(wspecialty, specialty.c_str(), 256);
+
+    // Устанавливаем значения
+    setFullName(wname);
+    setGroup(wgroup);
+    setSpecialty(wspecialty);
+    setCourse(crs);
+    setAverageGrade(avg);
 }
 
 const wchar_t* Student::getGroup() const { return group ? group : L"Не указана"; }

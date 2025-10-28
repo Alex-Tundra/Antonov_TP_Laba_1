@@ -19,6 +19,8 @@ public:
     void display() const override;
     void edit() override;
     Base* clone() const override;
+    void saveToStream(std::ostream& os) const override;
+    void loadFromStream(std::istream& is) override;
 
     const wchar_t* getGroup() const;
     const wchar_t* getSpecialty() const;

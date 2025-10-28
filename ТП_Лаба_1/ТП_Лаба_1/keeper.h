@@ -21,7 +21,10 @@ public:
     void remove(int index);
     void displayAll() const;
     void edit(int index);
+
+    // Полное сохранение в файл
     void saveToFile(const char* filename) const;
+    // Полное восстановление из файла
     void loadFromFile(const char* filename);
 
     int getSize() const;

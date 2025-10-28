@@ -1,12 +1,17 @@
 #define _CRT_SECURE_NO_WARNINGS
+#define NOMINMAX
+
 #include "teacher.h"
 #include <iostream>
 #include <cwchar>
+#include <sstream>
+#include <limits>
 
-// Добавляем inline функцию вместо std::max
-template<typename T>
-inline T my_max(T a, T b) {
-    return (a > b) ? a : b;
+// Внутренняя функция для этого файла
+namespace {
+    int myMax(int a, int b) {
+        return (a > b) ? a : b;
+    }
 }
 
 Teacher::Teacher() : Base(), groups(nullptr), subjects(nullptr),
@@ -20,7 +25,7 @@ groupsCapacity(5), subjectsCapacity(5) {
 Teacher::Teacher(const wchar_t* name, const wchar_t** grps, int grpCount, const wchar_t** subj, int subjCount)
     : Base(name), groups(nullptr), subjects(nullptr),
     groupsCount(0), subjectsCount(0),
-    groupsCapacity(my_max(5, grpCount + 5)), subjectsCapacity(my_max(5, subjCount + 5)) {
+    groupsCapacity(myMax(5, grpCount + 5)), subjectsCapacity(myMax(5, subjCount + 5)) {
 
     groups = new wchar_t* [groupsCapacity];
     subjects = new wchar_t* [subjectsCapacity];
@@ -56,14 +61,28 @@ groupsCapacity(other.groupsCapacity), subjectsCapacity(other.subjectsCapacity) {
 
 Teacher::~Teacher() {
     std::wcout << L"Деструктор преподавателя вызван для: " << getFullName() << std::endl;
+    clearGroups();
+    clearSubjects();
+}
+
+void Teacher::clearGroups() {
     for (int i = 0; i < groupsCount; i++) {
         delete[] groups[i];
     }
+    delete[] groups;
+    groups = nullptr;
+    groupsCount = 0;
+    groupsCapacity = 0;
+}
+
+void Teacher::clearSubjects() {
     for (int i = 0; i < subjectsCount; i++) {
         delete[] subjects[i];
     }
-    delete[] groups;
     delete[] subjects;
+    subjects = nullptr;
+    subjectsCount = 0;
+    subjectsCapacity = 0;
 }
 
 void Teacher::resizeGroups() {
@@ -166,6 +185,74 @@ Base* Teacher::clone() const {
     return new Teacher(*this);
 }
 
+void Teacher::saveToStream(std::ostream& os) const {
+    // Сохраняем тип объекта
+    os << "Teacher" << std::endl;
+
+    // Сохраняем ФИО
+    const wchar_t* wname = getFullName();
+    char buffer[256];
+    wcstombs(buffer, wname, 256);
+    os << buffer << std::endl;
+
+    // Сохраняем группы
+    os << groupsCount << std::endl;
+    for (int i = 0; i < groupsCount; i++) {
+        wcstombs(buffer, groups[i], 256);
+        os << buffer << std::endl;
+    }
+
+    // Сохраняем предметы
+    os << subjectsCount << std::endl;
+    for (int i = 0; i < subjectsCount; i++) {
+        wcstombs(buffer, subjects[i], 256);
+        os << buffer << std::endl;
+    }
+}
+
+void Teacher::loadFromStream(std::istream& is) {
+    // Читаем ФИО
+    std::string name;
+    std::getline(is, name);
+    wchar_t wname[256];
+    mbstowcs(wname, name.c_str(), 256);
+    setFullName(wname);
+
+    // Читаем группы
+    int grpCount;
+    is >> grpCount;
+    is.ignore();
+
+    clearGroups();
+    groupsCapacity = myMax(5, grpCount + 5);
+    groups = new wchar_t* [groupsCapacity];
+
+    for (int i = 0; i < grpCount; i++) {
+        std::string group;
+        std::getline(is, group);
+        wchar_t wgroup[256];
+        mbstowcs(wgroup, group.c_str(), 256);
+        addGroup(wgroup);
+    }
+
+    // Читаем предметы
+    int subjCount;
+    is >> subjCount;
+    is.ignore();
+
+    clearSubjects();
+    subjectsCapacity = myMax(5, subjCount + 5);
+    subjects = new wchar_t* [subjectsCapacity];
+
+    for (int i = 0; i < subjCount; i++) {
+        std::string subject;
+        std::getline(is, subject);
+        wchar_t wsubject[256];
+        mbstowcs(wsubject, subject.c_str(), 256);
+        addSubject(wsubject);
+    }
+}
+
 void Teacher::addNewGroup() {
     wchar_t buffer[100];
     std::wcout << L"Введите название группы: ";
@@ -264,14 +351,8 @@ Teacher& Teacher::operator=(const Teacher& other) {
     if (this != &other) {
         Base::operator=(other);
 
-        for (int i = 0; i < groupsCount; i++) {
-            delete[] groups[i];
-        }
-        for (int i = 0; i < subjectsCount; i++) {
-            delete[] subjects[i];
-        }
-        delete[] groups;
-        delete[] subjects;
+        clearGroups();
+        clearSubjects();
 
         groupsCount = 0;
         subjectsCount = 0;
