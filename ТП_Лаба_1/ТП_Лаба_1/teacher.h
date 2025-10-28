@@ -16,6 +16,8 @@ private:
     void addSubject(const wchar_t* subject);
     void resizeGroups();
     void resizeSubjects();
+    void clearGroups();
+    void clearSubjects();
 
 public:
     Teacher();
@@ -26,6 +28,8 @@ public:
     void display() const override;
     void edit() override;
     Base* clone() const override;
+    void saveToStream(std::ostream& os) const override;
+    void loadFromStream(std::istream& is) override;
 
     void addNewGroup();
     void addNewSubject();

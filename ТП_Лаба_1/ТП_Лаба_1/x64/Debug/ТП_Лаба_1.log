@@ -1,4 +1,6 @@
-﻿  main.cpp
+﻿  base.cpp
+  keeper.cpp
+  main.cpp
   staff.cpp
   student.cpp
   teacher.cpp

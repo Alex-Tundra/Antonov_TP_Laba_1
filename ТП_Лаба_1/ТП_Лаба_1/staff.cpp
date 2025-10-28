@@ -2,6 +2,8 @@
 #include "staff.h"
 #include <iostream>
 #include <cwchar>
+#include <sstream>
+#include <limits>
 
 Staff::Staff() : Base(), position(nullptr), phone(nullptr), responsibility(nullptr) {
     std::wcout << L"Конструктор персонала по умолчанию вызван" << std::endl;
@@ -64,6 +66,54 @@ void Staff::edit() {
 
 Base* Staff::clone() const {
     return new Staff(*this);
+}
+
+void Staff::saveToStream(std::ostream& os) const {
+    // Сохраняем тип объекта
+    os << "Staff" << std::endl;
+
+    // Сохраняем данные в UTF-8
+    const wchar_t* wname = getFullName();
+    const wchar_t* wposition = getPosition();
+    const wchar_t* wphone = getPhone();
+    const wchar_t* wresponsibility = getResponsibility();
+
+    char buffer[256];
+
+    wcstombs(buffer, wname, 256);
+    os << buffer << std::endl;
+
+    wcstombs(buffer, wposition, 256);
+    os << buffer << std::endl;
+
+    wcstombs(buffer, wphone, 256);
+    os << buffer << std::endl;
+
+    wcstombs(buffer, wresponsibility, 256);
+    os << buffer << std::endl;
+}
+
+void Staff::loadFromStream(std::istream& is) {
+    // Читаем данные из потока
+    std::string name, pos, ph, resp;
+
+    std::getline(is, name);
+    std::getline(is, pos);
+    std::getline(is, ph);
+    std::getline(is, resp);
+
+    // Конвертируем в wchar_t
+    wchar_t wname[256], wposition[256], wphone[256], wresponsibility[256];
+    mbstowcs(wname, name.c_str(), 256);
+    mbstowcs(wposition, pos.c_str(), 256);
+    mbstowcs(wphone, ph.c_str(), 256);
+    mbstowcs(wresponsibility, resp.c_str(), 256);
+
+    // Устанавливаем значения
+    setFullName(wname);
+    setPosition(wposition);
+    setPhone(wphone);
+    setResponsibility(wresponsibility);
 }
 
 const wchar_t* Staff::getPosition() const { return position ? position : L"Не указана"; }

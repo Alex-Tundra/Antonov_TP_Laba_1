@@ -21,6 +21,8 @@ public:
     virtual void display() const = 0;
     virtual void edit() = 0;
     virtual Base* clone() const = 0;
+    virtual void saveToStream(std::ostream& os) const = 0;
+    virtual void loadFromStream(std::istream& is) = 0;
 
     const wchar_t* getFullName() const;
     void setFullName(const wchar_t* name);
